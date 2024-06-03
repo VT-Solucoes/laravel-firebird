@@ -2,13 +2,13 @@
 
 namespace HarryGulliford\Firebird;
 
-use HarryGulliford\Firebird\Query as QueryBuilder;
 use HarryGulliford\Firebird\Query\Builder as FirebirdQueryBuilder;
 use HarryGulliford\Firebird\Query\Grammars\FirebirdGrammar as FirebirdQueryGrammar;
 use HarryGulliford\Firebird\Query\Processors\FirebirdProcessor as FirebirdQueryProcessor;
 use HarryGulliford\Firebird\Schema\Builder as FirebirdSchemaBuilder;
 use HarryGulliford\Firebird\Schema\Grammars\FirebirdGrammar as FirebirdSchemaGrammar;
 use Illuminate\Database\Connection as DatabaseConnection;
+use PDO;
 
 class FirebirdConnection extends DatabaseConnection
 {
@@ -81,19 +81,6 @@ class FirebirdConnection extends DatabaseConnection
     }
 
     /**
-     * Get query builder
-     *
-     * @return \Firebird\Query\Builder
-     */
-    public function getQueryBuilder()
-    {
-        $processor = $this->getPostProcessor();
-        $grammar = $this->getQueryGrammar();
-
-        return new QueryBuilder($this, $grammar, $processor);
-    }
-
-    /**
      * Execute stored function
      *
      * @param string $function
@@ -102,9 +89,7 @@ class FirebirdConnection extends DatabaseConnection
      */
     public function executeFunction($function, array $values = null)
     {
-        $query = $this->getQueryBuilder();
-
-        return $query->executeFunction($function, $values);
+        return $this->query()->executeFunction($function, $values);
     }
 
     /**
@@ -115,9 +100,7 @@ class FirebirdConnection extends DatabaseConnection
      */
     public function executeDirectProcedure($procedure, array $values = null)
     {
-        $query = $this->getQueryBuilder();
-
-        $query->executeProcedure($procedure, $values);
+        return $this->query()->executeProcedure($procedure, $values);
     }
 
     /**

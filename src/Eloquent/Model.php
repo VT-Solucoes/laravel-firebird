@@ -23,7 +23,7 @@ class Model extends BaseModel
     protected function getSequence()
     {
         $autoSequence = mb_substr('SEQ' . $this->getTable(), 0, 32);
-        return $this->sequence ? $this->sequence : $autoSequence;
+        return $this->sequence ?: $autoSequence;
     }
 
     /**
@@ -35,11 +35,7 @@ class Model extends BaseModel
      */
     protected function nextSequenceValue($sequence = null)
     {
-        $query = $this->getConnection()->getQueryBuilder();
-
-        $id = $query->nextSequenceValue($sequence ? $sequence : $this->getSequence());
-
-        return $id;
+        return $this->getConnection()->query()->nextSequenceValue($sequence ? $sequence : $this->getSequence());
     }
 
     /**
@@ -52,14 +48,9 @@ class Model extends BaseModel
     protected function insertAndSetId(Builder $query, $attributes)
     {
         $id = $this->nextSequenceValue();
-
         $keyName = $this->getKeyName();
-
         $attributes[$keyName] = $id;
-
         $query->insert($attributes);
-
         $this->setAttribute($keyName, $id);
     }
-
 }

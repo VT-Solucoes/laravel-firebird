@@ -2,6 +2,7 @@
 
 namespace HarryGulliford\Firebird;
 
+use Firebird\Query\Builder as QueryBuilder;
 use HarryGulliford\Firebird\Query\Builder as FirebirdQueryBuilder;
 use HarryGulliford\Firebird\Query\Grammars\FirebirdGrammar as FirebirdQueryGrammar;
 use HarryGulliford\Firebird\Query\Processors\FirebirdProcessor as FirebirdQueryProcessor;
@@ -77,5 +78,18 @@ class FirebirdConnection extends DatabaseConnection
     public function executeProcedure($procedure, array $values = [])
     {
         return $this->query()->fromProcedure($procedure, $values)->get();
+    }
+
+    /**
+     * Get query builder
+     *
+     * @return \Firebird\Query\Builder
+     */
+    public function getQueryBuilder()
+    {
+        $processor = $this->getPostProcessor();
+        $grammar = $this->getQueryGrammar();
+
+        return new QueryBuilder($this, $grammar, $processor);
     }
 }

@@ -503,7 +503,7 @@ class QueryTest extends TestCase
     public function it_can_filter_where_month()
     {
         Order::factory()->count(3)->create(['created_at' => now()]);
-        Order::factory()->count(5)->create(['created_at' => now()->subMonth()]);
+        Order::factory()->count(5)->create(['created_at' => now()->subMonthNoOverflow()]);
 
         $results = DB::table('orders')
             ->whereMonth('created_at', now())
@@ -516,7 +516,7 @@ class QueryTest extends TestCase
     public function it_can_filter_where_year()
     {
         Order::factory()->count(3)->create(['created_at' => now()]);
-        Order::factory()->count(5)->create(['created_at' => now()->subYear()]);
+        Order::factory()->count(5)->create(['created_at' => now()->subYearNoOverflow()]);
 
         $results = DB::table('orders')
             ->whereYear('created_at', now())
@@ -770,8 +770,8 @@ class QueryTest extends TestCase
     public function it_can_order_latest()
     {
         Order::factory()->create(['price' => 100, 'created_at' => now()]);
-        Order::factory()->create(['price' => 200, 'created_at' => now()->subMonths(1)]);
-        Order::factory()->create(['price' => 300, 'created_at' => now()->subMonths(2)]);
+        Order::factory()->create(['price' => 200, 'created_at' => now()->subMonthsNoOverflow(1)]);
+        Order::factory()->create(['price' => 300, 'created_at' => now()->subMonthsNoOverflow(2)]);
 
         $results = DB::table('orders')->latest()->get();
 
@@ -783,8 +783,8 @@ class QueryTest extends TestCase
     public function it_can_order_oldest()
     {
         Order::factory()->create(['price' => 100, 'created_at' => now()]);
-        Order::factory()->create(['price' => 200, 'created_at' => now()->subMonths(1)]);
-        Order::factory()->create(['price' => 300, 'created_at' => now()->subMonths(2)]);
+        Order::factory()->create(['price' => 200, 'created_at' => now()->subMonthsNoOverflow(1)]);
+        Order::factory()->create(['price' => 300, 'created_at' => now()->subMonthsNoOverflow(2)]);
 
         $results = DB::table('orders')->oldest()->get();
 
@@ -1122,13 +1122,13 @@ class QueryTest extends TestCase
         Order::factory()->create();
 
         $latestOrder = DB::table('orders')
-                   ->select('user_id', DB::raw('MAX("created_at") as "last_order_created_at"'))
-                   ->groupBy('user_id');
+            ->select('user_id', DB::raw('MAX("created_at") as "last_order_created_at"'))
+            ->groupBy('user_id');
 
         $user = DB::table('users')
-                ->joinSub($latestOrder, 'latest_order', function ($join) {
-                    $join->on('users.id', '=', 'latest_order.user_id');
-                })->first();
+            ->joinSub($latestOrder, 'latest_order', function ($join) {
+                $join->on('users.id', '=', 'latest_order.user_id');
+            })->first();
 
         $this->assertNotNull($user->last_order_created_at);
     }
@@ -1151,9 +1151,9 @@ class QueryTest extends TestCase
             ->where('price', 100);
 
         $orders = DB::table('orders')
-                    ->where('price', 16)
-                    ->union($first)
-                    ->get();
+            ->where('price', 16)
+            ->union($first)
+            ->get();
 
         $this->assertCount(3, $orders);
     }
